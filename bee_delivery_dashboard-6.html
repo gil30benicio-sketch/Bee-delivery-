@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEE Delivery — Dashboard Rio Branco</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #252538;
+    --yellow: #f5c518;
+    --yellow-dim: #f5c51830;
+    --yellow-glow: #f5c51815;
+    --green: #22d98a;
+    --green-dim: #22d98a25;
+    --red: #ff4d6d;
+    --red-dim: #ff4d6d25;
+    --blue: #4d9fff;
+    --blue-dim: #4d9fff25;
+    --muted: #5a5a7a;
+    --text: #e8e8f0;
+    --text2: #9090b0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BG texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, #f5c51808 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1300px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0;
+    margin-bottom: 36px;
+  }
+  .header-inner {
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .logo-area { display: flex; align-items: center; gap: 14px; }
+  .bee-icon {
+    width: 44px; height: 44px;
+    background: var(--yellow);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 24px var(--yellow-dim);
+  }
+  .logo-text h1 { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo-text span { font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; }
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--green-dim);
+    border: 1px solid #22d98a40;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px; font-weight: 600; color: var(--green);
+    font-family: 'DM Mono', monospace;
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  /* MÊS SELECTOR */
+  .month-selector {
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    overflow-x: auto;
+    margin-bottom: 32px;
+    scrollbar-width: none;
+  }
+  .month-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--text2);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .month-btn:hover { background: var(--surface2); color: var(--text); }
+  .month-btn.active {
+    background: var(--yellow);
+    color: #0a0a0f;
+  }
+  .month-btn.no-data { opacity: 0.4; }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* KPI GRID */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .kpi-card:hover { border-color: #3a3a55; }
+  .kpi-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 16px 16px 0 0;
+  }
+  .kpi-card.yellow::after { background: var(--yellow); }
+  .kpi-card.green::after { background: var(--green); }
+  .kpi-card.red::after { background: var(--red); }
+  .kpi-card.blue::after { background: var(--blue); }
+
+  .kpi-label {
+    font-size: 11px; font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .kpi-value {
+    font-size: 32px; font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .kpi-card.yellow .kpi-value { color: var(--yellow); }
+  .kpi-card.green .kpi-value { color: var(--green); }
+  .kpi-card.red .kpi-value { color: var(--red); }
+  .kpi-card.blue .kpi-value { color: var(--blue); }
+
+  .kpi-delta {
+    font-size: 12px; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+  .kpi-delta.up { background: var(--green-dim); color: var(--green); }
+  .kpi-delta.down { background: var(--red-dim); color: var(--red); }
+  .kpi-delta.same { background: #3a3a5530; color: var(--muted); }
+  .kpi-sub { font-size: 11px; color: var(--text2); margin-top: 6px; }
+
+  /* CHARTS ROW */
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+  }
+  @media(max-width: 768px) { .charts-row { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+  }
+  .chart-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .chart-title { font-size: 15px; font-weight: 700; }
+  .chart-subtitle { font-size: 12px; color: var(--text2); margin-top: 3px; }
+
+  /* GAUGE */
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .gauge-svg { width: 220px; height: 130px; }
+  .gauge-percent { font-size: 36px; font-weight: 800; color: var(--yellow); text-align: center; }
+  .gauge-label { font-size: 12px; color: var(--text2); text-align: center; }
+  .gauge-compare {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; width: 100%; margin-top: 16px;
+  }
+  .gauge-compare-item {
+    background: var(--surface2);
+    border-radius: 10px; padding: 12px;
+    text-align: center;
+  }
+  .gauge-compare-item .val { font-size: 20px; font-weight: 800; }
+  .gauge-compare-item .lbl { font-size: 10px; color: var(--text2); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  /* SUCCESS CHART - bar */
+  .success-bars { display: flex; flex-direction: column; gap: 10px; }
+  .sbar-row { display: flex; align-items: center; gap: 10px; }
+  .sbar-date { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; width: 32px; flex-shrink: 0; }
+  .sbar-track {
+    flex: 1; height: 8px;
+    background: var(--border);
+    border-radius: 4px; overflow: hidden;
+  }
+  .sbar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 0.8s ease;
+  }
+  .sbar-val { font-size: 11px; font-family: 'DM Mono', monospace; width: 36px; text-align: right; flex-shrink: 0; }
+
+  /* DAILY TABLE */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .table-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-title { font-size: 15px; font-weight: 700; }
+
+  /* INPUT MODAL */
+  .add-btn {
+    background: var(--yellow);
+    color: #0a0a0f;
+    border: none; cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 10px;
+    transition: opacity 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .add-btn:hover { opacity: 0.85; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px; font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    background: var(--surface2);
+    white-space: nowrap;
+  }
+  tbody tr { border-top: 1px solid var(--border); transition: background 0.15s; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td {
+    padding: 12px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .td-date { font-family: 'DM Mono', monospace; color: var(--text2); }
+  .td-num { font-family: 'DM Mono', monospace; font-weight: 600; }
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-ok { background: var(--green-dim); color: var(--green); }
+  .badge-fail { background: var(--red-dim); color: var(--red); }
+  .badge-up { background: var(--green-dim); color: var(--green); }
+  .badge-down { background: var(--red-dim); color: var(--red); }
+  .badge-same { background: #3a3a5530; color: var(--muted); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: #00000099;
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    width: 420px; max-width: 95vw;
+    box-shadow: 0 24px 80px #00000080;
+  }
+  .modal h2 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 24px; }
+  .form-row { margin-bottom: 16px; }
+  .form-row label { display: block; font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .form-row input, .form-row select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 15px; font-weight: 600;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-row input:focus, .form-row select:focus { border-color: var(--yellow); }
+  .form-row select option { background: var(--surface); }
+  .form-actions { display: flex; gap: 10px; margin-top: 8px; }
+  .btn-cancel {
+    flex: 1; background: none; border: 1px solid var(--border);
+    color: var(--text); cursor: pointer;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px; border-radius: 10px; transition: background 0.2s;
+  }
+  .btn-cancel:hover { background: var(--surface2); }
+  .btn-save {
+    flex: 2; background: var(--yellow); border: none;
+    color: #0a0a0f; cursor: pointer;
+    font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 800;
+    padding: 12px; border-radius: 10px; transition: opacity 0.2s;
+  }
+  .btn-save:hover { opacity: 0.85; }
+
+  /* GUIDE CARD */
+  .guide-card {
+    background: var(--yellow-glow);
+    border: 1px solid var(--yellow-dim);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 32px;
+  }
+  .guide-card h3 { font-size: 14px; font-weight: 700; color: var(--yellow); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .guide-steps { display: flex; flex-direction: column; gap: 8px; }
+  .guide-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    font-size: 13px; color: var(--text2);
+  }
+  .guide-step-num {
+    background: var(--yellow);
+    color: #0a0a0f;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  /* EMPTY */
+  .empty-state {
+    padding: 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .empty-state .emo { font-size: 32px; margin-bottom: 12px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--green);
+    color: #0a0a0f;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 700; font-size: 14px;
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.3s;
+    z-index: 9999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .pagination { display: flex; gap: 4px; padding: 16px; justify-content: center; border-top: 1px solid var(--border); }
+  .page-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--text2); cursor: pointer;
+    font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 6px 12px; border-radius: 6px; transition: all 0.15s;
+  }
+  .page-btn:hover, .page-btn.active { background: var(--yellow); color: #0a0a0f; border-color: var(--yellow); }
+
+  .alerta-card {
+    border-radius: 14px; padding: 16px 20px;
+    display: flex; align-items: flex-start; gap: 14px;
+    margin-bottom: 10px;
+    border: 1px solid;
+  }
+  .alerta-card.critico { background: var(--red-dim); border-color: #ff4d6d40; }
+  .alerta-card.atencao { background: #f5c51815; border-color: var(--yellow-dim); }
+  .alerta-card.ok { background: var(--green-dim); border-color: #22d98a40; }
+  .alerta-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+  .alerta-title { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .alerta-card.critico .alerta-title { color: var(--red); }
+  .alerta-card.atencao .alerta-title { color: var(--yellow); }
+  .alerta-card.ok .alerta-title { color: var(--green); }
+  .alerta-desc { font-size: 12px; color: var(--text2); line-height: 1.5; }
+
+  .semanal-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .semanal-label { font-size: 12px; color: var(--text2); font-family: 'DM Mono',monospace; width: 70px; flex-shrink: 0; }
+  .semanal-track { flex: 1; height: 20px; background: var(--border); border-radius: 6px; overflow: hidden; position: relative; }
+  .semanal-fill { height: 100%; border-radius: 6px; display: flex; align-items: center; padding-left: 8px; }
+  .semanal-val { font-size: 11px; font-weight: 700; color: #0a0a0f; font-family: 'DM Mono',monospace; }
+  .semanal-total { font-size: 11px; color: var(--text2); font-family: 'DM Mono',monospace; width: 44px; text-align: right; flex-shrink: 0; }
+
+  .ranking-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .ranking-pos { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+  .ranking-dia { font-size: 13px; font-weight: 600; flex: 1; }
+  .ranking-bar-wrap { flex: 2; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .ranking-bar-fill { height: 100%; border-radius: 4px; }
+  .ranking-avg { font-size: 12px; font-family: 'DM Mono',monospace; color: var(--yellow); font-weight: 700; width: 44px; text-align: right; flex-shrink: 0; }
+
+  .empresa-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 18px;
+  }
+  .empresa-name { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .empresa-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); font-family: 'DM Mono', monospace; margin-bottom: 6px; }
+  .empresa-row span:last-child { font-weight: 600; }
+  .cancel-compare {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface2); border-radius: 8px; padding: 10px;
+    margin-top: 10px;
+  }
+  .cancel-bar { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .cancel-fill { height: 100%; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <div class="bee-icon">🐝</div>
+        <div class="logo-text">
+          <h1>BEE Delivery</h1>
+          <span>Dashboard Operacional · Rio Branco, AC</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="live-badge"><div class="live-dot"></div> AO VIVO</div>
+        <button class="add-btn" style="background:var(--surface2);color:var(--yellow);border:1px solid var(--yellow-dim)" onclick="openMetaModal()">🎯 Definir Metas</button>
+        <button class="add-btn" onclick="openModal()">＋ Inserir Dados</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- GUIA PASSO A PASSO -->
+  <div class="guide-card">
+    <h3>📋 Como inserir dados no Dashboard</h3>
+    <div class="guide-steps">
+      <div class="guide-step"><div class="guide-step-num">1</div><span>Clique em <strong>🎯 Definir Metas</strong> para configurar a meta mensal de cada mês — o dashboard calcula a meta diária automaticamente.</span></div>
+      <div class="guide-step"><div class="guide-step-num">2</div><span>Clique no botão amarelo <strong>＋ Inserir Dados</strong> para registrar os pedidos do dia.</span></div>
+      <div class="guide-step"><div class="guide-step-num">3</div><span>Selecione o <strong>mês e o dia</strong>, preencha <strong>Produzido</strong> e <strong>Cancelados</strong> e clique Salvar.</span></div>
+      <div class="guide-step"><div class="guide-step-num">4</div><span>O dashboard atualiza automaticamente KPIs, gráficos e meta diária.</span></div>
+      <div class="guide-step"><div class="guide-step-num">5</div><span>Para ver outro mês, clique no nome do mês na barra de seleção abaixo.</span></div>
+    </div>
+  </div>
+
+  <!-- MÊS SELECTOR -->
+  <div class="month-selector" id="monthSelector"></div>
+
+  <!-- KPIs -->
+  <div class="section-title">KPIs PRINCIPAIS</div>
+  <div class="kpi-grid" id="kpiGrid"></div>
+
+  <!-- CHARTS -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Atingimento da Meta</div>
+          <div class="chart-subtitle">Mês atual vs mês anterior</div>
+        </div>
+      </div>
+      <div class="gauge-wrap">
+        <svg class="gauge-svg" viewBox="0 0 220 130" id="gaugeSvg">
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#f5c518"/>
+              <stop offset="100%" style="stop-color:#ffdb6b"/>
+            </linearGradient>
+          </defs>
+          <path d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="#252538" stroke-width="14" stroke-linecap="round"/>
+          <path id="gaugeArc" d="M 20 115 A 90 90 0 0 1 200 115" fill="none" stroke="url(#gaugeGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+          <text id="gaugeText" x="110" y="108" text-anchor="middle" fill="#f5c518" font-family="Syne" font-size="26" font-weight="800">0%</text>
+        </svg>
+        <div class="gauge-compare" id="gaugeCompare"></div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Índice de Sucesso Diário</div>
+          <div class="chart-subtitle">Últimos 15 dias com dados</div>
+        </div>
+      </div>
+      <div class="success-bars" id="successBars"></div>
+    </div>
+  </div>
+
+  <!-- TABELA DIÁRIA -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">Registro Diário — <span id="tableMonthLabel"></span></div>
+    </div>
+    <div id="tableWrap"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
+
+  <!-- ALERTA DIAS CRÍTICOS -->
+  <div id="alertaSection" style="margin-bottom:32px"></div>
+
+  <!-- META DINÂMICA -->
+  <div class="section-title">📅 META DIÁRIA DINÂMICA — RECUPERAÇÃO</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:32px" id="metaDinamicaGrid"></div>
+
+  <!-- VISÃO SEMANAL + RANKING -->
+  <div class="charts-row" style="margin-bottom:32px">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">📊 Visão Semanal</div>
+          <div class="chart-subtitle">Produção agrupada por semana</div>
+        </div>
+      </div>
+      <div id="semanalChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">🏆 Ranking por Dia da Semana</div>
+          <div class="chart-subtitle">Média de produção por dia</div>
+        </div>
+      </div>
+      <div id="rankingDiaSemana"></div>
+    </div>
+  </div>
+
+  <!-- CANCELAMENTOS -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div class="section-title" style="margin-bottom:0">CANCELAMENTOS — COMPARATIVO E PROJEÇÃO</div>
+    <button class="add-btn" style="background:var(--surface2);color:var(--yellow);border:1px solid var(--yellow-dim);font-size:12px;padding:8px 14px" onclick="openCancelModal()">✏️ Editar % Mês Anterior</button>
+  </div>
+
+  <!-- CANCEL KPI ROW -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:24px" id="cancelKpiRow"></div>
+
+  <!-- CANCEL CHART -->
+  <div class="charts-row" style="margin-bottom:32px">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Taxa de Cancelamento</div>
+          <div class="chart-subtitle">Mês anterior vs mês atual vs projeção</div>
+        </div>
+      </div>
+      <div id="cancelBarChart"></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Tendência de Cancelamento</div>
+          <div class="chart-subtitle">Últimos dias do mês atual</div>
+        </div>
+      </div>
+      <div class="success-bars" id="cancelTrendBars"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAMENTO MÊS ANTERIOR -->
+<div class="modal-overlay" id="cancelModalOverlay">
+  <div class="modal" style="width:460px">
+    <h2>✏️ Taxa de Cancelamento — Mês Anterior</h2>
+    <p>Informe a taxa de cancelamento real do mês anterior para comparar com o mês atual.</p>
+    <div class="form-row">
+      <label>MÊS DE REFERÊNCIA</label>
+      <select id="cancelRefMonth"></select>
+    </div>
+    <div class="form-row">
+      <label>TAXA DE CANCELAMENTO DO MÊS ANTERIOR (%)</label>
+      <input type="number" id="cancelPctInput" min="0" max="100" step="0.1" placeholder="Ex: 9.5">
+    </div>
+    <div style="background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:8px;font-size:12px;color:var(--text2)">
+      💡 <strong style="color:var(--text)">Como funciona:</strong> Se o mês anterior teve 9% de cancelamento e o atual está com 7%, o dashboard mostrará <span style="color:var(--green)">▼ 2pp — MELHORANDO</span>. Se estiver com 11%, mostrará <span style="color:var(--red)">▲ 2pp — PIORANDO</span>.
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeCancelModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveCancelRef()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL META -->
+<div class="modal-overlay" id="metaModalOverlay">
+  <div class="modal" style="width:500px">
+    <h2>🎯 Definir Metas Mensais</h2>
+    <p>Digite a meta de pedidos para cada mês. A meta diária é calculada automaticamente.</p>
+    <div style="display:grid;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px" id="metaInputGrid"></div>
+    <div class="form-actions" style="margin-top:20px">
+      <button class="btn-cancel" onclick="closeMetaModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveMetas()">💾 Salvar Metas</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2>Inserir Dados do Dia</h2>
+    <p>Preencha as informações do dia que deseja registrar.</p>
+    <div class="form-row">
+      <label>MÊS</label>
+      <select id="inputMonth"></select>
+    </div>
+    <div class="form-row">
+      <label>DIA</label>
+      <select id="inputDay"></select>
+    </div>
+    <div class="form-row">
+      <label>PEDIDOS PRODUZIDOS (ENTREGUES)</label>
+      <input type="number" id="inputProduzido" min="0" placeholder="Ex: 210">
+    </div>
+    <div class="form-row">
+      <label>PEDIDOS CANCELADOS</label>
+      <input type="number" id="inputCancelado" min="0" placeholder="Ex: 15">
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveData()">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✅ Dados salvos com sucesso!</div>
+
+<script>
+// ===================== DATA =====================
+const MONTHS = [
+  { key: 'Janeiro', days: 31 },
+  { key: 'Fevereiro', days: 28 },
+  { key: 'Março', days: 31 },
+  { key: 'Abril', days: 30 },
+  { key: 'Maio', days: 31 },
+  { key: 'Junho', days: 30 },
+  { key: 'Julho', days: 31 },
+  { key: 'Agosto', days: 31 },
+  { key: 'Setembro', days: 30 },
+  { key: 'Outubro', days: 31 },
+  { key: 'Novembro', days: 30 },
+  { key: 'Dezembro', days: 31 },
+];
+
+// Default metas (from xlsx: Abril=5830, Março=5830)
+const DEFAULT_METAS = {
+  'Janeiro': 5830, 'Fevereiro': 5830, 'Março': 5830, 'Abril': 5830,
+  'Maio': 5830, 'Junho': 5830, 'Julho': 5830, 'Agosto': 5830,
+  'Setembro': 5830, 'Outubro': 5830, 'Novembro': 5830, 'Dezembro': 5830
+};
+
+let metas = {}; // key: month name, value: meta mensal
+
+function getMetaMensal(mIdx) {
+  const key = MONTHS[mIdx].key;
+  return metas[key] || DEFAULT_METAS[key] || 5830;
+}
+function getMetaDiaria(mIdx) {
+  return getMetaMensal(mIdx) / MONTHS[mIdx].days;
+}
+
+// Abril data (from xlsx)
+const ABRIL_RAW = [
+  {d:1,p:292,c:23},{d:2,p:282,c:17},{d:3,p:83,c:10},{d:4,p:246,c:61},
+  {d:5,p:53,c:5},{d:6,p:194,c:26},{d:7,p:236,c:36},{d:8,p:212,c:35},
+  {d:9,p:213,c:19},{d:10,p:226,c:18},{d:11,p:186,c:18},{d:12,p:12,c:5},
+  {d:13,p:190,c:22},{d:14,p:201,c:35},{d:15,p:206,c:9},{d:16,p:198,c:16},
+  {d:17,p:218,c:11},{d:18,p:209,c:10},{d:19,p:18,c:2},{d:20,p:169,c:38},
+  {d:21,p:33,c:10},{d:22,p:226,c:14},{d:23,p:204,c:9},{d:24,p:208,c:12},
+  {d:25,p:196,c:16},{d:26,p:18,c:5},{d:27,p:164,c:12},{d:28,p:227,c:25},
+  {d:29,p:226,c:24},{d:30,p:0,c:0}
+];
+
+const EMPRESAS = [
+  { nome: 'Empresa A', cancelPassado: 0.05, cancelAtual: 0 },
+  { nome: 'Empresa B', cancelPassado: 0.05, cancelAtual: 0 },
+  { nome: 'Empresa C', cancelPassado: 0.05, cancelAtual: 0 },
+];
+
+// ===================== STATE =====================
+let db = {};
+let currentMonth = 3; // Abril (0-indexed)
+let currentPage = 1;
+const PAGE_SIZE = 10;
+
+function initDB() {
+  const saved = localStorage.getItem('bee_db');
+  if (saved) { db = JSON.parse(saved); } else { db = {}; }
+  const savedMetas = localStorage.getItem('bee_metas');
+  if (savedMetas) { metas = JSON.parse(savedMetas); } else { metas = {}; }
+
+  if (!db['Abril']) {
+    db['Abril'] = {};
+    ABRIL_RAW.forEach(r => {
+      if (r.p > 0 || r.c > 0) db['Abril'][r.d] = { produzido: r.p, cancelado: r.c };
+    });
+    db['Março'] = db['Março'] || {};
+    const marcoRef = [17,205,187,203,232,263,250,53,204,211,200,222,224,215,14,203,226,204,218,216,185,19,186,208,201,200,214,174,28,0,0];
+    marcoRef.forEach((p,i) => {
+      if (p > 0) db['Março'][i+1] = { produzido: p, cancelado: Math.round(p*0.05) };
+    });
+    saveDB();
+  }
+}
+
+function saveDB() {
+  localStorage.setItem('bee_db', JSON.stringify(db));
+  localStorage.setItem('bee_metas', JSON.stringify(metas));
+}
+
+function getMonthData(mIdx) {
+  const mKey = MONTHS[mIdx].key;
+  const raw = db[mKey] || {};
+  const days = MONTHS[mIdx].days;
+  const meta = getMetaDiaria(mIdx);
+  let rows = [];
+  let acumulado = 0;
+  for (let d = 1; d <= days; d++) {
+    const entry = raw[d] || null;
+    const produzido = entry ? entry.produzido : 0;
+    const cancelado = entry ? entry.cancelado : 0;
+    acumulado += produzido;
+    const total = produzido + cancelado;
+    const indice = total > 0 ? produzido / total : 0;
+    const pctMeta = meta > 0 ? produzido / meta : 0;
+    rows.push({ d, produzido, cancelado, acumulado, indice, pctMeta, hasData: !!entry });
+  }
+  return rows;
+}
+
+function getPrevMonthTotal(mIdx) {
+  if (mIdx === 0) return 0;
+  const rows = getMonthData(mIdx - 1);
+  return rows.reduce((s, r) => s + r.produzido, 0);
+}
+
+// ===================== RENDER =====================
+function render() {
+  renderMonthSelector();
+  renderKPIs();
+  renderGauge();
+  renderSuccessBars();
+  renderAlertas();
+  renderMetaDinamica();
+  renderSemanal();
+  renderRanking();
+  renderTable();
+  renderCancelSection();
+}
+
+function renderMonthSelector() {
+  const el = document.getElementById('monthSelector');
+  el.innerHTML = MONTHS.map((m, i) => {
+    const hasData = db[m.key] && Object.keys(db[m.key]).length > 0;
+    return `<button class="month-btn ${i === currentMonth ? 'active' : ''} ${!hasData ? 'no-data' : ''}"
+      onclick="selectMonth(${i})">${m.key.substring(0,3).toUpperCase()}</button>`;
+  }).join('');
+}
+
+function selectMonth(idx) {
+  currentMonth = idx;
+  currentPage = 1;
+  render();
+}
+
+function renderKPIs() {
+  const rows = getMonthData(currentMonth);
+  const m = MONTHS[currentMonth];
+  const metaMensal = getMetaMensal(currentMonth);
+  const metaDiaria = getMetaDiaria(currentMonth);
+  const totalProd = rows.reduce((s,r) => s + r.produzido, 0);
+  const totalCancel = rows.reduce((s,r) => s + r.cancelado, 0);
+  const daysWithData = rows.filter(r => r.hasData).length;
+  const totalAttempts = totalProd + totalCancel;
+  const indiceMedia = totalAttempts > 0 ? totalProd / totalAttempts : 0;
+  const pctMeta = metaMensal > 0 ? totalProd / metaMensal : 0;
+  const melhorDia = Math.max(...rows.map(r => r.produzido), 0);
+  const projecao = daysWithData > 0 ? (totalProd / daysWithData) * m.days : 0;
+  const prevTotal = getPrevMonthTotal(currentMonth);
+  const crescimento = prevTotal > 0 ? (totalProd - prevTotal) / prevTotal : 0;
+
+  const prevRows = currentMonth > 0 ? getMonthData(currentMonth - 1) : [];
+  const prevCancel = prevRows.reduce((s,r) => s + r.cancelado, 0);
+  const prevAttempts = prevRows.reduce((s,r) => s + r.produzido + r.cancelado, 0);
+  const prevIndice = prevAttempts > 0 ? prevRows.reduce((s,r) => s + r.produzido, 0) / prevAttempts : 0;
+  const cancelDelta = prevCancel > 0 ? (totalCancel - prevCancel) / prevCancel : 0;
+
+  const cancelColor = totalCancel < prevCancel ? 'green' : totalCancel === prevCancel ? 'blue' : 'red';
+  const cancelDeltaDir = totalCancel < prevCancel ? 'up' : totalCancel === prevCancel ? 'same' : 'down';
+  const cancelDeltaIcon = totalCancel < prevCancel ? '▼' : totalCancel === prevCancel ? '→' : '▲';
+  const cancelDeltaTxt = prevCancel === 0 ? '—' : `${cancelDeltaIcon} ${Math.abs(cancelDelta*100).toFixed(1)}%`;
+  const crescDir = crescimento >= 0 ? 'up' : 'down';
+  const crescIcon = crescimento >= 0 ? '▲' : '▼';
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Total Produzido</div>
+      <div class="kpi-value">${totalProd.toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${crescDir}">${crescIcon} ${Math.abs(crescimento*100).toFixed(1)}% vs mês ant.</span>
+      <div class="kpi-sub">Meta: ${metaMensal.toLocaleString('pt-BR')} pedidos</div>
+    </div>
+    <div class="kpi-card ${totalProd >= metaMensal ? 'green' : 'blue'}">
+      <div class="kpi-label">% da Meta Mensal</div>
+      <div class="kpi-value">${(pctMeta*100).toFixed(1)}%</div>
+      <span class="kpi-delta ${pctMeta >= 1 ? 'up' : 'same'}">${pctMeta >= 1 ? '✓ ATINGIDA' : '⚡ EM CURSO'}</span>
+      <div class="kpi-sub">Projeção: ${Math.round(projecao).toLocaleString('pt-BR')} (${metaMensal > 0 ? (projecao/metaMensal*100).toFixed(1) : 0}%)</div>
+    </div>
+    <div class="kpi-card yellow" style="border-top-color:var(--yellow)">
+      <div class="kpi-label">Meta Diária Necessária</div>
+      <div class="kpi-value">${Math.round(metaDiaria).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta same">📅 pedidos/dia</span>
+      <div class="kpi-sub">Meta mensal: ${metaMensal.toLocaleString('pt-BR')} ÷ ${m.days} dias</div>
+    </div>
+    <div class="kpi-card ${cancelColor}">
+      <div class="kpi-label">Cancelamentos</div>
+      <div class="kpi-value">${totalCancel.toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${cancelDeltaDir}">${cancelDeltaTxt}</span>
+      <div class="kpi-sub">Mês anterior: ${prevCancel.toLocaleString('pt-BR')}</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-label">Índice de Sucesso</div>
+      <div class="kpi-value">${(indiceMedia*100).toFixed(1)}%</div>
+      <span class="kpi-delta ${indiceMedia >= prevIndice ? 'up' : 'down'}">${indiceMedia >= prevIndice ? '▲' : '▼'} vs ${(prevIndice*100).toFixed(1)}%</span>
+      <div class="kpi-sub">Mês anterior: ${(prevIndice*100).toFixed(1)}%</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Melhor Dia</div>
+      <div class="kpi-value">${melhorDia.toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta same">📦 pedidos</span>
+      <div class="kpi-sub">${daysWithData} dias com dados registrados</div>
+    </div>
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Projeção Final</div>
+      <div class="kpi-value">${Math.round(projecao).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${projecao >= metaMensal ? 'up' : 'down'}">${projecao >= metaMensal ? '✓ META OK' : '⚠ PRECISA ACELERAR'}</span>
+      <div class="kpi-sub">Meta: ${metaMensal.toLocaleString('pt-BR')}</div>
+    </div>
+  `;
+}
+
+function renderGauge() {
+  const rows = getMonthData(currentMonth);
+  const totalProd = rows.reduce((s,r) => s + r.produzido, 0);
+  const metaMensal = getMetaMensal(currentMonth);
+  const pct = Math.min(metaMensal > 0 ? totalProd / metaMensal : 0, 1);
+  const prevTotal = getPrevMonthTotal(currentMonth);
+  const prevMeta = currentMonth > 0 ? getMetaMensal(currentMonth - 1) : metaMensal;
+  const prevPct = Math.min(prevMeta > 0 ? prevTotal / prevMeta : 0, 1);
+
+  const offset = 283 - (283 * pct);
+  document.getElementById('gaugeArc').style.strokeDashoffset = offset;
+  document.getElementById('gaugeText').textContent = (pct*100).toFixed(1) + '%';
+
+  const mName = MONTHS[currentMonth].key;
+  const prevName = currentMonth > 0 ? MONTHS[currentMonth - 1].key : '—';
+  document.getElementById('gaugeCompare').innerHTML = `
+    <div class="gauge-compare-item">
+      <div class="val" style="color:var(--yellow)">${(pct*100).toFixed(1)}%</div>
+      <div class="lbl">${mName.toUpperCase()}</div>
+    </div>
+    <div class="gauge-compare-item">
+      <div class="val" style="color:var(--text2)">${(prevPct*100).toFixed(1)}%</div>
+      <div class="lbl">${prevName !== '—' ? prevName.toUpperCase() : 'ANT.'}</div>
+    </div>
+  `;
+}
+
+function renderSuccessBars() {
+  const rows = getMonthData(currentMonth).filter(r => r.hasData);
+  const last15 = rows.slice(-15);
+  const el = document.getElementById('successBars');
+  if (last15.length === 0) {
+    el.innerHTML = '<div class="empty-state"><div class="emo">📊</div>Sem dados ainda</div>';
+    return;
+  }
+  el.innerHTML = last15.map(r => {
+    const pct = r.indice * 100;
+    const color = pct >= 90 ? 'var(--green)' : pct >= 75 ? 'var(--yellow)' : 'var(--red)';
+    return `<div class="sbar-row">
+      <div class="sbar-date">D${r.d.toString().padStart(2,'0')}</div>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${pct.toFixed(1)}%;background:${color}"></div></div>
+      <div class="sbar-val" style="color:${color}">${pct.toFixed(0)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderTable() {
+  const rows = getMonthData(currentMonth);
+  const mName = MONTHS[currentMonth].key;
+  document.getElementById('tableMonthLabel').textContent = mName;
+
+  const total = rows.length;
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+  let html = `<div style="overflow-x:auto"><table>
+    <thead><tr>
+      <th>Dia</th><th>Produzido</th><th>Cancelados</th><th>% Meta</th><th>Índice Sucesso</th><th>Acumulado</th><th>Status</th><th>Comparativo</th>
+    </tr></thead><tbody>`;
+
+  const prevRows = currentMonth > 0 ? getMonthData(currentMonth - 1) : [];
+
+  pageRows.forEach(r => {
+    if (!r.hasData) {
+      html += `<tr>
+        <td class="td-date">${r.d.toString().padStart(2,'0')}/${(currentMonth+1).toString().padStart(2,'0')}</td>
+        <td colspan="7" style="color:var(--muted);font-size:12px;font-family:'DM Mono',monospace">— sem dados —</td>
+      </tr>`;
+      return;
+    }
+    const prevDayProd = prevRows[r.d - 1]?.produzido || 0;
+    let compBadge = '';
+    if (prevDayProd === 0) compBadge = `<span class="badge badge-same">—</span>`;
+    else if (r.produzido > prevDayProd) compBadge = `<span class="badge badge-up">▲ ${r.produzido - prevDayProd}</span>`;
+    else if (r.produzido < prevDayProd) compBadge = `<span class="badge badge-down">▼ ${prevDayProd - r.produzido}</span>`;
+    else compBadge = `<span class="badge badge-same">= IGUAL</span>`;
+
+    const metaBadge = r.pctMeta >= 1
+      ? `<span class="badge badge-ok">✓ ATINGIDA</span>`
+      : `<span class="badge badge-fail">✗ ABAIXO</span>`;
+
+    const indColor = r.indice >= 0.9 ? 'var(--green)' : r.indice >= 0.75 ? 'var(--yellow)' : 'var(--red)';
+
+    html += `<tr>
+      <td class="td-date">${r.d.toString().padStart(2,'0')}/${(currentMonth+1).toString().padStart(2,'0')}</td>
+      <td class="td-num">${r.produzido.toLocaleString('pt-BR')}</td>
+      <td class="td-num" style="color:var(--red)">${r.cancelado.toLocaleString('pt-BR')}</td>
+      <td class="td-num" style="color:var(--yellow)">${(r.pctMeta*100).toFixed(1)}%</td>
+      <td class="td-num" style="color:${indColor}">${(r.indice*100).toFixed(1)}%</td>
+      <td class="td-num">${r.acumulado.toLocaleString('pt-BR')}</td>
+      <td>${metaBadge}</td>
+      <td>${compBadge}</td>
+    </tr>`;
+  });
+
+  html += '</tbody></table></div>';
+  document.getElementById('tableWrap').innerHTML = html;
+
+  // Pagination
+  let pag = '';
+  for (let p = 1; p <= pages; p++) {
+    pag += `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="gotoPage(${p})">${p}</button>`;
+  }
+  document.getElementById('pagination').innerHTML = pag;
+}
+
+function gotoPage(p) { currentPage = p; renderTable(); }
+
+function renderEmpresas() {
+  document.getElementById('empresaGrid').innerHTML = EMPRESAS.map(e => {
+    const color = e.cancelAtual < e.cancelPassado ? 'var(--green)' : e.cancelAtual === e.cancelPassado ? 'var(--blue)' : 'var(--red)';
+    const delta = e.cancelPassado > 0 ? ((e.cancelAtual - e.cancelPassado) / e.cancelPassado * 100).toFixed(1) : '0.0';
+    const icon = e.cancelAtual < e.cancelPassado ? '▼' : e.cancelAtual === e.cancelPassado ? '=' : '▲';
+    return `<div class="empresa-card">
+      <div class="empresa-name">🏪 ${e.nome}</div>
+      <div class="empresa-row"><span>Cancel. Mês Passado</span><span>${(e.cancelPassado*100).toFixed(0)}%</span></div>
+      <div class="empresa-row"><span>Cancel. Atual</span><span style="color:${color}">${(e.cancelAtual*100).toFixed(0)}%</span></div>
+      <div class="cancel-compare">
+        <div class="cancel-bar"><div class="cancel-fill" style="width:${e.cancelPassado*100}%;background:var(--muted)"></div></div>
+        <div style="font-size:12px;font-family:'DM Mono',monospace;color:${color};font-weight:700">${icon} ${Math.abs(delta)}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== MODAL =====================
+function openModal() {
+  // Populate month select
+  const mSel = document.getElementById('inputMonth');
+  mSel.innerHTML = MONTHS.map((m,i) => `<option value="${i}" ${i===currentMonth?'selected':''}>${m.key}</option>`).join('');
+  updateDaySelect();
+  mSel.onchange = updateDaySelect;
+  document.getElementById('inputProduzido').value = '';
+  document.getElementById('inputCancelado').value = '';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function updateDaySelect() {
+  const mIdx = parseInt(document.getElementById('inputMonth').value);
+  const days = MONTHS[mIdx].days;
+  const dSel = document.getElementById('inputDay');
+  dSel.innerHTML = Array.from({length: days}, (_,i) => `<option value="${i+1}">${(i+1).toString().padStart(2,'0')}</option>`).join('');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+function saveData() {
+  const mIdx = parseInt(document.getElementById('inputMonth').value);
+  const day = parseInt(document.getElementById('inputDay').value);
+  const prod = parseInt(document.getElementById('inputProduzido').value) || 0;
+  const canc = parseInt(document.getElementById('inputCancelado').value) || 0;
+  const mKey = MONTHS[mIdx].key;
+  if (!db[mKey]) db[mKey] = {};
+  db[mKey][day] = { produzido: prod, cancelado: canc };
+  saveDB();
+  closeModal();
+  currentMonth = mIdx;
+  currentPage = 1;
+  render();
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Modal close on overlay click
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ===================== ALERTAS DIAS CRÍTICOS =====================
+function renderAlertas() {
+  const rows = getMonthData(currentMonth);
+  const metaDiaria = getMetaDiaria(currentMonth);
+  const metaMensal = getMetaMensal(currentMonth);
+  const limiteMinimo = metaDiaria * 0.5; // abaixo de 50% da meta diária = crítico
+  const limiteAtencao = metaDiaria * 0.8; // abaixo de 80% = atenção
+
+  const diasCriticos = rows.filter(r => r.hasData && r.produzido < limiteMinimo);
+  const diasAtencao = rows.filter(r => r.hasData && r.produzido >= limiteMinimo && r.produzido < limiteAtencao);
+  const totalProd = rows.reduce((s,r) => s + r.produzido, 0);
+  const daysWithData = rows.filter(r => r.hasData).length;
+  const hoje = new Date();
+  const daysLeft = MONTHS[currentMonth].days - daysWithData;
+  const falta = metaMensal - totalProd;
+  const precisaPorDia = daysLeft > 0 && falta > 0 ? falta / daysLeft : 0;
+
+  let alertas = [];
+
+  if (diasCriticos.length > 0) {
+    const dias = diasCriticos.map(r => `D${r.d}`).join(', ');
+    alertas.push({ tipo: 'critico', icon: '🚨', titulo: `${diasCriticos.length} dia(s) crítico(s) detectado(s)`, desc: `Dias ${dias} produziram abaixo de 50% da meta diária (${Math.round(limiteMinimo)} pedidos). Esses dias estão puxando sua média para baixo.` });
+  }
+  if (diasAtencao.length > 0) {
+    const dias = diasAtencao.map(r => `D${r.d}`).join(', ');
+    alertas.push({ tipo: 'atencao', icon: '⚠️', titulo: `${diasAtencao.length} dia(s) abaixo de 80% da meta`, desc: `Dias ${dias} produziram entre 50% e 80% da meta diária. Atenção para não repetir.` });
+  }
+  if (precisaPorDia > metaDiaria * 1.3 && daysLeft > 0) {
+    alertas.push({ tipo: 'critico', icon: '📉', titulo: `Ritmo insuficiente — precisa acelerar muito`, desc: `Faltam ${falta.toLocaleString('pt-BR')} pedidos em ${daysLeft} dias. Precisará produzir ${Math.round(precisaPorDia).toLocaleString('pt-BR')}/dia — ${Math.round((precisaPorDia/metaDiaria-1)*100)}% acima da meta diária normal.` });
+  } else if (precisaPorDia > metaDiaria && daysLeft > 0) {
+    alertas.push({ tipo: 'atencao', icon: '⚡', titulo: `Meta requer aceleração`, desc: `Faltam ${falta.toLocaleString('pt-BR')} pedidos em ${daysLeft} dias. Precisará de ${Math.round(precisaPorDia).toLocaleString('pt-BR')}/dia para fechar o mês.` });
+  } else if (falta <= 0) {
+    alertas.push({ tipo: 'ok', icon: '🎉', titulo: `Meta mensal atingida!`, desc: `Parabéns! Você já superou a meta de ${metaMensal.toLocaleString('pt-BR')} pedidos este mês.` });
+  } else if (daysLeft > 0) {
+    alertas.push({ tipo: 'ok', icon: '✅', titulo: `Ritmo saudável`, desc: `No ritmo atual, precisará de ${Math.round(precisaPorDia).toLocaleString('pt-BR')}/dia nos ${daysLeft} dias restantes — dentro da meta normal.` });
+  }
+
+  const section = document.getElementById('alertaSection');
+  if (alertas.length === 0) { section.innerHTML = ''; return; }
+
+  section.innerHTML = `<div class="section-title">🚨 ALERTAS E DIAGNÓSTICO</div>` +
+    alertas.map(a => `<div class="alerta-card ${a.tipo}">
+      <div class="alerta-icon">${a.icon}</div>
+      <div><div class="alerta-title">${a.titulo}</div><div class="alerta-desc">${a.desc}</div></div>
+    </div>`).join('');
+}
+
+// ===================== META DINÂMICA =====================
+function renderMetaDinamica() {
+  const rows = getMonthData(currentMonth);
+  const metaMensal = getMetaMensal(currentMonth);
+  const metaDiaria = getMetaDiaria(currentMonth);
+  const m = MONTHS[currentMonth];
+  const totalProd = rows.reduce((s,r) => s + r.produzido, 0);
+  const daysWithData = rows.filter(r => r.hasData).length;
+  const daysLeft = m.days - daysWithData;
+  const falta = metaMensal - totalProd;
+  const precisaPorDia = daysLeft > 0 ? Math.max(falta, 0) / daysLeft : 0;
+  const mediaAtual = daysWithData > 0 ? totalProd / daysWithData : 0;
+  const diff = precisaPorDia - metaDiaria;
+  const diffColor = diff <= 0 ? 'var(--green)' : diff <= metaDiaria * 0.2 ? 'var(--yellow)' : 'var(--red)';
+
+  document.getElementById('metaDinamicaGrid').innerHTML = `
+    <div class="kpi-card yellow">
+      <div class="kpi-label">Meta Diária Original</div>
+      <div class="kpi-value">${Math.round(metaDiaria).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta same">📋 ${metaMensal.toLocaleString('pt-BR')} ÷ ${m.days} dias</span>
+      <div class="kpi-sub">Planejado no início do mês</div>
+    </div>
+    <div class="kpi-card ${diff <= 0 ? 'green' : diff <= metaDiaria*0.2 ? 'blue' : 'red'}">
+      <div class="kpi-label">Meta Diária Ajustada</div>
+      <div class="kpi-value" style="color:${diffColor}">${Math.round(precisaPorDia).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${diff <= 0 ? 'up' : 'down'}">${diff <= 0 ? '✓ Dentro do plano' : `▲ +${Math.round(diff)} a mais/dia`}</span>
+      <div class="kpi-sub">Para bater a meta nos ${daysLeft} dias restantes</div>
+    </div>
+    <div class="kpi-card blue">
+      <div class="kpi-label">Sua Média Atual</div>
+      <div class="kpi-value">${Math.round(mediaAtual).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${mediaAtual >= metaDiaria ? 'up' : 'down'}">${mediaAtual >= metaDiaria ? '▲ acima da meta' : '▼ abaixo da meta'}</span>
+      <div class="kpi-sub">${daysWithData} dias registrados</div>
+    </div>
+    <div class="kpi-card ${falta <= 0 ? 'green' : 'yellow'}">
+      <div class="kpi-label">Pedidos Faltando</div>
+      <div class="kpi-value" style="font-size:28px">${falta <= 0 ? '✓' : Math.max(falta,0).toLocaleString('pt-BR')}</div>
+      <span class="kpi-delta ${falta <= 0 ? 'up' : 'same'}">${falta <= 0 ? '🎉 META BATIDA!' : `${daysLeft} dias restantes`}</span>
+      <div class="kpi-sub">Meta: ${metaMensal.toLocaleString('pt-BR')} | Atual: ${totalProd.toLocaleString('pt-BR')}</div>
+    </div>
+  `;
+}
+
+// ===================== VISÃO SEMANAL =====================
+function renderSemanal() {
+  const rows = getMonthData(currentMonth);
+  const semanas = [];
+  let semAtual = [];
+  let semNum = 1;
+
+  rows.forEach((r, i) => {
+    semAtual.push(r);
+    if (semAtual.length === 7 || i === rows.length - 1) {
+      semanas.push({ num: semNum, rows: semAtual });
+      semAtual = [];
+      semNum++;
+    }
+  });
+
+  const maxTotal = Math.max(...semanas.map(s => s.rows.reduce((sum,r) => sum+r.produzido, 0)), 1);
+  const metaSem = getMetaDiaria(currentMonth) * 7;
+
+  document.getElementById('semanalChart').innerHTML = semanas.length === 0
+    ? '<div class="empty-state"><div class="emo">📊</div>Sem dados ainda</div>'
+    : semanas.map(s => {
+        const total = s.rows.reduce((sum,r) => sum+r.produzido, 0);
+        const dias = s.rows.length;
+        const metaS = getMetaDiaria(currentMonth) * dias;
+        const pct = (total / maxTotal) * 100;
+        const color = total >= metaS ? 'var(--green)' : total >= metaS * 0.8 ? 'var(--yellow)' : 'var(--red)';
+        const d1 = s.rows[0].d, d2 = s.rows[s.rows.length-1].d;
+        return `<div class="semanal-row">
+          <div class="semanal-label">Sem ${s.num}<br><span style="font-size:10px">D${d1}–D${d2}</span></div>
+          <div class="semanal-track">
+            <div class="semanal-fill" style="width:${pct}%;background:${color}">
+              ${total > 0 ? `<span class="semanal-val">${total.toLocaleString('pt-BR')}</span>` : ''}
+            </div>
+          </div>
+          <div class="semanal-total" style="color:${color}">${(total/metaS*100).toFixed(0)}%</div>
+        </div>`;
+      }).join('');
+}
+
+// ===================== RANKING DIA DA SEMANA =====================
+function renderRanking() {
+  const rows = getMonthData(currentMonth).filter(r => r.hasData);
+  const diasNomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const counts = Array(7).fill(0);
+  const totals = Array(7).fill(0);
+
+  // Abril 2026 começa na quarta-feira (dia 3 da semana, 0=dom)
+  const firstDow = new Date(2026, currentMonth, 1).getDay();
+
+  rows.forEach(r => {
+    const dow = (firstDow + r.d - 1) % 7;
+    totals[dow] += r.produzido;
+    counts[dow]++;
+  });
+
+  const avgs = diasNomes.map((n, i) => ({ nome: n, avg: counts[i] > 0 ? totals[i] / counts[i] : 0, count: counts[i] }));
+  const sorted = [...avgs].sort((a,b) => b.avg - a.avg);
+  const maxAvg = Math.max(...sorted.map(s => s.avg), 1);
+
+  const medalhas = ['🥇','🥈','🥉'];
+  const posColors = ['#f5c518','#9090b0','#cd7f32'];
+
+  document.getElementById('rankingDiaSemana').innerHTML = sorted.length === 0 || sorted.every(s => s.avg === 0)
+    ? '<div class="empty-state"><div class="emo">📊</div>Sem dados ainda</div>'
+    : sorted.map((s, i) => {
+        const color = i === 0 ? 'var(--yellow)' : i === 1 ? 'var(--text2)' : i === 2 ? '#cd7f32' : 'var(--muted)';
+        return `<div class="ranking-row">
+          <div class="ranking-pos" style="background:${i<3?posColors[i]:'var(--surface2)'};color:${i<3?'#0a0a0f':'var(--muted)'}">
+            ${i < 3 ? medalhas[i] : i+1}
+          </div>
+          <div class="ranking-dia">${s.nome}<span style="font-size:10px;color:var(--muted);margin-left:6px">${s.count}x</span></div>
+          <div class="ranking-bar-wrap"><div class="ranking-bar-fill" style="width:${(s.avg/maxAvg)*100}%;background:${color}"></div></div>
+          <div class="ranking-avg" style="color:${color}">${Math.round(s.avg)}</div>
+        </div>`;
+      }).join('');
+}
+
+
+// cancelRefs: { 'Abril': 9.0, 'Maio': 8.5, ... } — taxa % do mês ANTERIOR informada pelo usuário
+let cancelRefs = {};
+
+function saveCancelRefsToStorage() {
+  localStorage.setItem('bee_cancel_refs', JSON.stringify(cancelRefs));
+}
+function loadCancelRefs() {
+  const s = localStorage.getItem('bee_cancel_refs');
+  if (s) cancelRefs = JSON.parse(s);
+}
+
+function getCurrentCancelRate(mIdx) {
+  const rows = getMonthData(mIdx);
+  const totalProd = rows.reduce((s,r) => s + r.produzido, 0);
+  const totalCancel = rows.reduce((s,r) => s + r.cancelado, 0);
+  const total = totalProd + totalCancel;
+  return total > 0 ? (totalCancel / total) * 100 : null;
+}
+
+function getProjectedCancelRate(mIdx) {
+  // Use last 7 days with data to project trend
+  const rows = getMonthData(mIdx).filter(r => r.hasData);
+  const last7 = rows.slice(-7);
+  if (last7.length === 0) return null;
+  const totalP = last7.reduce((s,r) => s + r.produzido, 0);
+  const totalC = last7.reduce((s,r) => s + r.cancelado, 0);
+  const t = totalP + totalC;
+  return t > 0 ? (totalC / t) * 100 : null;
+}
+
+function renderCancelSection() {
+  const mKey = MONTHS[currentMonth].key;
+  const refPct = cancelRefs[mKey] !== undefined ? cancelRefs[mKey] : null;
+  const currentPct = getCurrentCancelRate(currentMonth);
+  const projPct = getProjectedCancelRate(currentMonth);
+
+  // KPI row
+  let kpiHtml = '';
+
+  // Card: Mês anterior (manual)
+  kpiHtml += `<div class="kpi-card blue">
+    <div class="kpi-label">Cancel. Mês Anterior</div>
+    <div class="kpi-value" style="font-size:28px">${refPct !== null ? refPct.toFixed(1) + '%' : '—'}</div>
+    <span class="kpi-delta same">📋 informado por você</span>
+    <div class="kpi-sub">Clique em "Editar %" para atualizar</div>
+  </div>`;
+
+  // Card: Atual
+  let curColor = 'yellow', curDir = 'same', curTxt = '—';
+  if (currentPct !== null && refPct !== null) {
+    const diff = currentPct - refPct;
+    if (diff < -0.5) { curColor = 'green'; curDir = 'up'; curTxt = `▼ ${Math.abs(diff).toFixed(1)}pp MELHORANDO`; }
+    else if (diff > 0.5) { curColor = 'red'; curDir = 'down'; curTxt = `▲ ${Math.abs(diff).toFixed(1)}pp PIORANDO`; }
+    else { curColor = 'blue'; curDir = 'same'; curTxt = `= ESTÁVEL`; }
+  }
+  kpiHtml += `<div class="kpi-card ${curColor}">
+    <div class="kpi-label">Cancel. Mês Atual</div>
+    <div class="kpi-value" style="font-size:28px">${currentPct !== null ? currentPct.toFixed(1) + '%' : '—'}</div>
+    <span class="kpi-delta ${curDir}">${refPct !== null && currentPct !== null ? curTxt : '⚡ aguardando dados'}</span>
+    <div class="kpi-sub">${MONTHS[currentMonth].key} 2026</div>
+  </div>`;
+
+  // Card: Projeção (últimos 7 dias)
+  let projColor = 'yellow', projTxt = '—';
+  if (projPct !== null && refPct !== null) {
+    const diff = projPct - refPct;
+    if (diff < -0.5) { projColor = 'green'; projTxt = `▼ Projetando QUEDA`; }
+    else if (diff > 0.5) { projColor = 'red'; projTxt = `▲ Projetando ALTA`; }
+    else { projColor = 'blue'; projTxt = `= Projetando ESTÁVEL`; }
+  } else if (projPct !== null) {
+    projTxt = `baseado nos últimos 7 dias`;
+  }
+  kpiHtml += `<div class="kpi-card ${projColor}">
+    <div class="kpi-label">Projeção de Cancelamento</div>
+    <div class="kpi-value" style="font-size:28px">${projPct !== null ? projPct.toFixed(1) + '%' : '—'}</div>
+    <span class="kpi-delta ${projColor === 'green' ? 'up' : projColor === 'red' ? 'down' : 'same'}">${projTxt}</span>
+    <div class="kpi-sub">Tendência dos últimos 7 dias</div>
+  </div>`;
+
+  document.getElementById('cancelKpiRow').innerHTML = kpiHtml;
+
+  // Bar Chart comparativo
+  const bars = [
+    { label: 'Mês Anterior', val: refPct, color: 'var(--muted)' },
+    { label: 'Mês Atual', val: currentPct, color: currentPct !== null && refPct !== null ? (currentPct <= refPct ? 'var(--green)' : 'var(--red)') : 'var(--yellow)' },
+    { label: 'Projeção', val: projPct, color: projPct !== null && refPct !== null ? (projPct <= refPct ? 'var(--blue)' : 'var(--red)') : 'var(--blue)' },
+  ];
+  const maxVal = Math.max(...bars.map(b => b.val || 0), 15);
+  document.getElementById('cancelBarChart').innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:18px;padding:8px 0">
+      ${bars.map(b => `
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace">${b.label}</span>
+            <span style="font-size:14px;font-weight:700;color:${b.color}">${b.val !== null ? b.val.toFixed(1) + '%' : '—'}</span>
+          </div>
+          <div style="height:12px;background:var(--border);border-radius:6px;overflow:hidden">
+            <div style="height:100%;width:${b.val !== null ? Math.min((b.val/maxVal)*100,100) : 0}%;background:${b.color};border-radius:6px;transition:width 0.8s ease"></div>
+          </div>
+        </div>
+      `).join('')}
+      ${refPct !== null && currentPct !== null ? `
+        <div style="background:var(--surface2);border-radius:10px;padding:12px;text-align:center">
+          <span style="font-size:12px;color:var(--text2)">Variação total: </span>
+          <span style="font-size:14px;font-weight:800;color:${currentPct <= refPct ? 'var(--green)' : 'var(--red)'}">
+            ${currentPct <= refPct ? '▼' : '▲'} ${Math.abs(currentPct - refPct).toFixed(1)} pontos percentuais
+          </span>
+        </div>
+      ` : ''}
+    </div>`;
+
+  // Trend bars (daily cancel rate)
+  const dayRows = getMonthData(currentMonth).filter(r => r.hasData);
+  const last10 = dayRows.slice(-10);
+  const trendEl = document.getElementById('cancelTrendBars');
+  if (last10.length === 0) {
+    trendEl.innerHTML = '<div class="empty-state"><div class="emo">📊</div>Sem dados ainda</div>';
+    return;
+  }
+  trendEl.innerHTML = last10.map(r => {
+    const total = r.produzido + r.cancelado;
+    const pct = total > 0 ? (r.cancelado / total) * 100 : 0;
+    const color = pct <= (refPct || 10) ? 'var(--green)' : pct <= (refPct || 10) * 1.3 ? 'var(--yellow)' : 'var(--red)';
+    return `<div class="sbar-row">
+      <div class="sbar-date">D${r.d.toString().padStart(2,'0')}</div>
+      <div class="sbar-track"><div class="sbar-fill" style="width:${Math.min(pct*3,100)}%;background:${color}"></div></div>
+      <div class="sbar-val" style="color:${color}">${pct.toFixed(1)}%</div>
+    </div>`;
+  }).join('');
+}
+
+function openCancelModal() {
+  const sel = document.getElementById('cancelRefMonth');
+  sel.innerHTML = MONTHS.map((m,i) => `<option value="${i}" ${i===currentMonth?'selected':''}>${m.key}</option>`).join('');
+  const mKey = MONTHS[currentMonth].key;
+  document.getElementById('cancelPctInput').value = cancelRefs[mKey] !== undefined ? cancelRefs[mKey] : '';
+  document.getElementById('cancelModalOverlay').classList.add('open');
+}
+
+function closeCancelModal() {
+  document.getElementById('cancelModalOverlay').classList.remove('open');
+}
+
+function saveCancelRef() {
+  const mIdx = parseInt(document.getElementById('cancelRefMonth').value);
+  const mKey = MONTHS[mIdx].key;
+  const val = parseFloat(document.getElementById('cancelPctInput').value);
+  if (!isNaN(val) && val >= 0) {
+    cancelRefs[mKey] = val;
+    saveCancelRefsToStorage();
+  }
+  closeCancelModal();
+  currentMonth = mIdx;
+  render();
+  const t = document.getElementById('toast');
+  t.textContent = '📊 Referência de cancelamento salva!';
+  t.classList.add('show');
+  setTimeout(() => { t.classList.remove('show'); t.textContent = '✅ Dados salvos com sucesso!'; }, 2500);
+}
+
+document.getElementById('cancelModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCancelModal();
+});
+
+// ===================== MODAL META =====================
+function openMetaModal() {
+  const grid = document.getElementById('metaInputGrid');
+  grid.innerHTML = MONTHS.map((m, i) => {
+    const metaAtual = metas[m.key] || DEFAULT_METAS[m.key] || 5830;
+    const diaria = (metaAtual / m.days).toFixed(0);
+    return `<div style="display:grid;grid-template-columns:120px 1fr auto;align-items:center;gap:10px;background:var(--surface2);border-radius:10px;padding:12px 14px">
+      <div style="font-size:13px;font-weight:700">${m.key}</div>
+      <div>
+        <input type="number" id="meta_${m.key}" value="${metaAtual}" min="0"
+          style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;font-weight:600;padding:8px 12px;outline:none"
+          oninput="updateMetaPreview('${m.key}', ${m.days})">
+      </div>
+      <div id="preview_${m.key}" style="font-size:11px;color:var(--yellow);font-family:'DM Mono',monospace;white-space:nowrap;min-width:80px;text-align:right">
+        ${diaria}/dia
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('metaModalOverlay').classList.add('open');
+}
+
+function updateMetaPreview(mKey, days) {
+  const val = parseInt(document.getElementById('meta_' + mKey).value) || 0;
+  document.getElementById('preview_' + mKey).textContent = Math.round(val / days) + '/dia';
+}
+
+function closeMetaModal() {
+  document.getElementById('metaModalOverlay').classList.remove('open');
+}
+
+function saveMetas() {
+  MONTHS.forEach(m => {
+    const val = parseInt(document.getElementById('meta_' + m.key)?.value) || 0;
+    if (val > 0) metas[m.key] = val;
+  });
+  saveDB();
+  closeMetaModal();
+  render();
+  const t = document.getElementById('toast');
+  t.textContent = '🎯 Metas salvas com sucesso!';
+  t.classList.add('show');
+  setTimeout(() => { t.classList.remove('show'); t.textContent = '✅ Dados salvos com sucesso!'; }, 2500);
+}
+
+document.getElementById('metaModalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMetaModal();
+});
+
+// ===================== INIT =====================
+initDB();
+loadCancelRefs();
+render();
+</script>
+</body>
+</html>
